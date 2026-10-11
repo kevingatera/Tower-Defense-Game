@@ -35,12 +35,13 @@ class Wave_Structure():
     """ ADDED - helper method to get next info"""
     def get_next_enemy_chunk(self):
         if self.wave <= self.last_wave:
-            self.enemy_reserves = self.enemy_groups[self.wave - 1][self.current_chunk]["enemy_count"]
-            self.enemy_btwn = self.enemy_groups[self.wave - 1][self.current_chunk]["time_between"]
+            wave_data = self.enemy_groups[self.wave - 1]
+            self.enemy_reserves = wave_data[self.current_chunk]["enemy_count"]
+            self.enemy_btwn = wave_data[self.current_chunk]["time_between"]
         else:
             self.enemy_reserves = 0
             self.enemy_btwn = 500
-            
+
 
     def attempt_spawn(self, counter):
         spawned_enemy = None #setting variable to none so that the code wont be pissed
@@ -54,13 +55,16 @@ class Wave_Structure():
                 counter = self.enemy_btwn
                 self.enemy_reserves -= 1
             else:  # or try to advance to next enemy chunk
-                if self.current_chunk < self.enemy_groups[self.wave - 1]["total_chunks"]: 
+                wave_data = self.enemy_groups[self.wave - 1]
+                if self.current_chunk < wave_data["total_chunks"]: 
                     self.current_chunk += 1
                     self.get_next_enemy_chunk()
                 else:
                     counter = 500 # Wave time btwn, its like 5secs
                     self.current_chunk = 1
                     self.wave += 1
+                    if self.wave <= self.last_wave:
+                        self.get_next_enemy_chunk()
             
             # Handle next wave            
             if len(self.enemies) == 0:
@@ -74,6 +78,8 @@ class Wave_Structure():
 
     """ ADDED - int conversion """
     def read(self, difficulty):
+        self.enemy_groups = []
+        waves_by_num = {}
         in_header = True
         with open(f"enemies/waves/waves_{difficulty}_new.csv", mode="r") as file:
             for row in file:
@@ -90,19 +96,27 @@ class Wave_Structure():
                 enemy_count = int(enemy_count)
                 time_between = int(time_between)
 
-                self.enemy_groups.append({
-                    "wave_num": wave_num,
-                    "chunk": chunk,
-                    "total_chunks": total_chunks,
+                if wave_num not in waves_by_num:
+                    waves_by_num[wave_num] = {"total_chunks": total_chunks}
+
+                waves_by_num[wave_num]["total_chunks"] = total_chunks
+                waves_by_num[wave_num][chunk] = {
                     "enemy_type": enemy_type,
                     "enemy_count": enemy_count,
                     "time_between": time_between
-                })
+                }
                 #------------------------------------------------------------------------------------#
 
-        for i in range(len(self.enemy_groups)):
-            print(f"Wave {self.enemy_groups[i]['wave_num']} info: {self.enemy_groups[i]['enemy_type']} count: {self.enemy_groups[i]['enemy_count']}, time between: {self.enemy_groups[i]['time_between']}")
+        for wave_num in sorted(waves_by_num):
+            self.enemy_groups.append(waves_by_num[wave_num])
+            wave_data = waves_by_num[wave_num]
+            for chunk in range(1, wave_data["total_chunks"] + 1):
+                chunk_data = wave_data[chunk]
+                print(f"Wave {wave_num} info: {chunk_data['enemy_type']} count: {chunk_data['enemy_count']}, time between: {chunk_data['time_between']}")
         
-        print(f"\nreading done! {len(self.enemy_groups)} enemy groups loaded.") # Print every enemy on earth
+        self.last_wave = len(self.enemy_groups)
+        self.wave = 1
+        self.current_chunk = 1
+        self.get_next_enemy_chunk()
 
-
+        print(f"\nreading done! {len(self.enemy_groups)} waves loaded.") # Print every enemy on earth
