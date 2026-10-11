@@ -46,6 +46,9 @@ class Wave_Structure():
     def attempt_spawn(self, counter):
         spawned_enemy = None #setting variable to none so that the code wont be pissed
 
+        if self.wave > self.last_wave:
+            return (None, counter)
+
         counter -= 1
         if counter <= 0:
             # Spawn an enemy
@@ -65,13 +68,6 @@ class Wave_Structure():
                     self.wave += 1
                     if self.wave <= self.last_wave:
                         self.get_next_enemy_chunk()
-            
-            # Handle next wave            
-            if len(self.enemies) == 0:
-                if self.wave-1 > self.last_wave:
-                    return(None, 0)
-                else:
-                    counter = 5
         
         return (self.enemy_type_map["NORMAL"], counter)
         
