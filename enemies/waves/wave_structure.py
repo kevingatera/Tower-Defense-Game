@@ -69,7 +69,7 @@ class Wave_Structure():
                 else:
                     counter = 5
         
-        return (self.enemy_type_map["NORMAL"], counter)
+        return (spawned_enemy, counter)
         
 
     """ ADDED - int conversion """
