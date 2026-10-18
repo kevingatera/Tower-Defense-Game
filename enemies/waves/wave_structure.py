@@ -17,12 +17,13 @@ class Wave_Structure():
         self.enemies = []
         self.enemy_reserves = 0
         self.enemy_btwn = 0
+        # classes, not objects - attempt_spawn makes a new enemy from these each time
         self.enemy_type_map = {
-            "NORMAL": Reg_Enemy(self.screen),
-            "SPEEDY": Fast_Enemy(self.screen),
-            "TANK": Tank_Enemy(self.screen),
-            "ZOMBIE": Zombie_Enemy(self.screen),
-            "BOSS": Boss_Enemy(self.screen)
+            "NORMAL": Reg_Enemy,
+            "SPEEDY": Fast_Enemy,
+            "TANK": Tank_Enemy,
+            "ZOMBIE": Zombie_Enemy,
+            "BOSS": Boss_Enemy
         }
 
     def current_wave_display(self):
@@ -50,7 +51,7 @@ class Wave_Structure():
             # Spawn an enemy
             if self.enemy_reserves > 0:
                 #spawned_enemy = self.enemy_groups[self.wave - 1][self.current_chunk]["enemy_type"] 
-                spawned_enemy = self.enemy_type_map["NORMAL"] #for now, just spawn normal enemies
+                spawned_enemy = self.enemy_type_map["NORMAL"](self.screen) #for now, just spawn normal enemies
                 counter = self.enemy_btwn
                 self.enemy_reserves -= 1
             else:  # or try to advance to next enemy chunk
